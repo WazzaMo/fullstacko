@@ -40,5 +40,23 @@ public class MoviesController : ControllerBase
         Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
         return result;
     }
+
+    [HttpGet("{movieId}")]
+    public async Task<IActionResult> GetMovieDetails(string movieId)
+    {
+        IActionResult result = StatusCode(500, "Error fetching movie details");
+        try
+        {
+            var movieDetails = await _integrationProvider.GetMovieDetails(movieId);
+            result = Ok(movieDetails);
+        }
+        catch (Exception ex)
+        {
+            result = StatusCode(500, $"Error fetching movie details: {ex.Message}");
+        }
+
+        Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
+        return result;
+    }
 }
 
