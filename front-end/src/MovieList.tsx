@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import {
     Image,
@@ -9,9 +9,10 @@ import {
 import { MovieBanner } from './models/MovieBanner';
 import Nothing from './Nothing.webp';
 import ErrorBox from './ErrorBox';
+import MovieDetails from './MovieDetails';
 
 export default function MovieList() {
-    const url = 'http://localhost:5008/api/Movies';
+    const url = 'http://localhost:8080/api/Movies';
     const [movies, setMovies] = useState<MovieBanner[] | undefined>([]);
 
     useEffect(() => {
@@ -34,6 +35,7 @@ export default function MovieList() {
         };
         fetchMovies();
     }, []);
+    const [show, setShow] = useState(false);
 
     const movieList = movies?.map((movie, idx) => {
         return (
@@ -46,6 +48,7 @@ export default function MovieList() {
                     <Image src={movie.poster} height={64} width={64} onError={(e) => {
                         e.currentTarget.src = Nothing;
                     }} />
+                    <MovieDetails movieId={movie.id} />
                 </AccordionBody>
             </AccordionItem>
         );
