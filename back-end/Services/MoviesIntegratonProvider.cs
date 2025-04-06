@@ -25,13 +25,13 @@ public class MoviesIntegrationProvider : IIntegrationProvider
     public async Task<IEnumerable<MovieSummaryModel>> GetMovies()
     {
         List<MovieSummaryModel> allMovies = [];
+        TimeSpan timeout = TimeSpan.FromSeconds(TIMEOUT);
 
         try
         {
             var filmWorldTask = _httpClient.GetAsync($"{BASE_URL}/filmworld/movies");
             var cinemaWorldTask = _httpClient.GetAsync($"{BASE_URL}/cinemaworld/movies");
-            Task[] getTasks = [filmWorldTask, cinemaWorldTask];
-            TimeSpan timeout = TimeSpan.FromSeconds(TIMEOUT);
+            Task<HttpResponseMessage>[] getTasks = [filmWorldTask, cinemaWorldTask];
 
             int index = Task.WaitAny(getTasks, timeout);
             if (index == -1)
@@ -39,13 +39,13 @@ public class MoviesIntegrationProvider : IIntegrationProvider
                 throw new Exception("Timeout while fetching movies");
             }
 
-            var filmWorldResponse = await filmWorldTask.Result.Content.ReadAsStringAsync();
-            var cinemaWorldResponse = await cinemaWorldTask.Result.Content.ReadAsStringAsync();
-
-            var filmWorldMovies = JsonSerializer.Deserialize<MovieListModel>(filmWorldResponse)?.Movies ?? new List<MovieSummaryModel>();
-            var cinemaWorldMovies = JsonSerializer.Deserialize<MovieListModel>(cinemaWorldResponse)?.Movies ?? new List<MovieSummaryModel>();
-
-            allMovies = index == 0 ? filmWorldMovies : cinemaWorldMovies;
+            Task<HttpResponseMessage> getResponse = getTasks[index];
+            var response = await getResponse.Result.Content.ReadAsStringAsync();
+            if (response != null)
+            {
+                var movieList = JsonSerializer.Deserialize<MovieListModel>(response) ?? new MovieListModel();
+                allMovies = movieList.Movies;
+            }
         }
         catch (Exception ex)
         {
