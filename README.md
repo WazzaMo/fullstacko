@@ -10,6 +10,11 @@ back-end.
 I had intended for the front-end and back-end to both run in Docker
 using compose (maybe swarm would have been better for this...).
 
+The problem being that the back-end container appears to be unable
+to connect to the downstream provider APIs. The Back-end is reachable
+from the front-end but cannot return movies. Putting the network_mode to "host"
+should have avoided this but something else seems to be going on.
+
 Due to time limitations, I put an end to this for now.
 
 As a result, the back-end and front end need to be started directly
